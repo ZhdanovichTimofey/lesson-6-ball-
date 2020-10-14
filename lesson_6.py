@@ -10,6 +10,7 @@ n = 10  # максимальное количество шариков на эк
 k = 3  # максимальное количество квадратов на экране
 FPS = 30
 f = 0
+records = [0 for i in range(10)]
 screen = pygame.display.set_mode((1200, 900))
 # Цвета
 RED = (255, 0, 0)
@@ -36,6 +37,14 @@ color_ball = [COLORS[randint(0, 5)] for j5 in range(n)]
 score0 = 0
 score_ball = 5  # Количество очков за попадание по шарику
 score_rect = 12  # Количество очков за попадание по квадрату
+
+
+def read_records():
+    input = open('record table sys.txt', 'r')
+    r = input.readlines()
+    for i in range(10):
+        r[i] = r[i].rstrip()
+        records[i] = int(r[i])
 
 
 def ball_move(x, y, v_x, v_y, r, color):
@@ -126,10 +135,29 @@ def click(event, score):
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
+read_records()
 
 while not finished:
     clock.tick(FPS)
     f += 1
+    if f == 600:
+        finished = True
+        output1 = open('record table.txt', 'w')
+        output2 = open('record table sys.txt', 'w')
+        i = 0
+        while i < 10:
+            print(i)
+            if records[i] < score0:
+                print(i)
+                for j in range(8, i, -1):
+                    records[j + 1] = records[j]
+                print(i)
+                records[i] = score0
+                i = 10
+            i += 1
+        for i in range(10):
+            print('Результат', i + 1, ': ', records[i], file=output1)
+            print(records[i], file=output2)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
@@ -148,6 +176,7 @@ while not finished:
                                              v_ball_x[i], v_ball_y[i],
                                              r_ball[i], color_ball[i])
     pygame.display.update()
+    pygame.display.set_caption(str(score0))
     screen.fill(BLACK)
 
 pygame.quit()
