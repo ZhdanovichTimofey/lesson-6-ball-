@@ -10,6 +10,7 @@ n = 10  # максимальное количество шариков на эк
 k = 3  # максимальное количество квадратов на экране
 FPS = 30
 f = 0
+# Таблица рекордов
 records = [0 for i in range(10)]
 screen = pygame.display.set_mode((1200, 900))
 # Цвета
@@ -21,18 +22,6 @@ MAGENTA = (255, 0, 255)
 CYAN = (0, 255, 255)
 BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
-# Параметры квадратов
-x_rect = [randint(100, 1100) for i2 in range(n)]
-y_rect = [randint(100, 900) for i3 in range(n)]
-r_rect = [randint(10, 100) for i4 in range(n)]
-color_rect = [COLORS[randint(0, 5)] for i5 in range(n)]
-# Параметры шариков
-v_ball_x = [randint(-10, 10) for j0 in range(n)]
-v_ball_y = [randint(-10, 10) for j1 in range(n)]
-x_ball = [randint(100, 1100) for j2 in range(n)]
-y_ball = [randint(100, 900) for j3 in range(n)]
-r_ball = [randint(10, 100) for j4 in range(n)]
-color_ball = [COLORS[randint(0, 5)] for j5 in range(n)]
 # Счет
 score0 = 0
 score_ball = 5  # Количество очков за попадание по шарику
@@ -40,6 +29,10 @@ score_rect = 12  # Количество очков за попадание по 
 
 
 def read_records():
+    """
+    Функция заносит в память программы таблицу рекордов
+    :return:
+    """
     input = open('record table sys.txt', 'r')
     r = input.readlines()
     for i in range(10):
@@ -47,63 +40,111 @@ def read_records():
         records[i] = int(r[i])
 
 
-def ball_move(x, y, v_x, v_y, r, color):
-    """
-    Функция реализует смещение шариков в каждый кадр
-    :param x: x-координата шарика
-    :param y: y-координата шарика
-    :param v_x: Увеличение x-координаты шарика в следующий такт
-    :param v_y: Увеличение y-координаты шарика в следующий такт
-    :param r: Радиус шарика
-    :param color: Цвет шарика
-    :return: Измененные координаты и скорости шарика (в формате
-    x, y, v_x, v_y
-    """
-    circle(screen, color, (x, y), r)
-    x += v_x
-    y += v_y
-    if (y + v_y >= 900) or (y + v_y <= 0):
-        v_y = -v_y
-    elif (x + v_x >= 1200) or (x + v_x <= 0):
-        v_x = -v_x
-    return x, y, v_x, v_y
+class Ball(object):
+    def __init__(self):
+        """
+        Создание нового объекта из класса шариков
+        """
+        self.x = randint(100, 1100)
+        self.y = randint(100, 900)
+        self.vx = randint(-10, 10)
+        self.vy = randint(-10, 10)
+        self.r = randint(10, 100)
+        self.color = COLORS[randint(0, 5)]
+        circle(screen, self.color, (self.x, self.y), self.r)
+
+    def ball_move(self):
+        """
+        Функция реализует смещение шариков в каждый кадр
+        :return:
+        """
+        circle(screen, self.color, (self.x, self.y), self.r)
+        self.x += self.vx
+        self.y += self.vy
+        if (self.y + self.vy >= 900) or (self.y + self.vy <= 0):
+            self.vy = -self.vy
+        elif (self.x + self.vx >= 1200) or (self.x + self.vx <= 0):
+            self.vx = -self.vx
+
+    def new_ball(self):
+        """
+        рисует новый шарик вместо удаленного в точке со случайными
+        координатами и радиусом с одним из цветов из COLORS
+        :return:
+        """
+        self.x = randint(100, 1100)
+        self.y = randint(100, 900)
+        self.r = randint(10, 100)
+        self.color = COLORS[randint(0, 5)]
+        circle(screen, self.color, (self.x, self.y), self.r)
+
+    def ball_click(self, event, score):
+        """
+        Функция проверяет попадание по шарику
+        :param event: событие(нажатие на кнопку мыши)
+        :param score: текущий счет
+        :return: возвращает счет после обработки события
+        """
+        if ((event.pos[0] - self.x) ** 2 +
+                (event.pos[1] - self.y) ** 2 <= self.r ** 2):
+            self.new_ball()
+            score += score_ball
+            print('Ваш счет', score)
+        return score
 
 
-def old_rect(i):
+class Rect(object):
     """
-    Функция реализует отрисовку квадратов на старых местах в каждый
-    кадр, если номер кадра не кратен 15(обновление раз в 0,5 секунды)
-    :param i: номер квадрата
-    :return:
+    Класс квадратов
     """
-    rect(screen, color_rect[i], (x_rect[i], y_rect[i], r_rect[i], r_rect[i]))
+    def __init__(self):
+        """
+        Создание нового объекта из класса квадратов
+        """
+        self.x = randint(100, 1100)
+        self.y = randint(100, 900)
+        self.r = randint(10, 100)
+        self.color = COLORS[randint(0, 5)]
+        rect(screen, self.color,
+             (self.x, self.y, self.r, self.r))
 
+    def old_rect(self):
+        """
+        Функция реализует отрисовку квадратов на старых местах в каждый
+        кадр, если номер кадра не кратен 15(обновление раз в 0,5 секунды)
+        :return:
+        """
+        rect(screen, self.color,
+             (self.x, self.y, self.r, self. r))
 
-def new_rect(i):
-    """
-    рисует новый квадрат вместо удаленного в точке со случайными
-    координатами и стороной, с одним из цветов из COLORS
-    :param i: номер удаленного квадрата
-    :return:
-    """
-    x_rect[i] = randint(100, 1100)
-    y_rect[i] = randint(100, 900)
-    r_rect[i] = randint(10, 100)
-    color_rect[i] = COLORS[randint(0, 5)]
-    rect(screen, color_rect[i], (x_rect[i], y_rect[i], r_rect[i], r_rect[i]))
+    def new_rect(self):
+        """
+        рисует новый квадрат вместо удаленного в точке со случайными
+        координатами и стороной, с одним из цветов из COLORS
+        :return:
+        """
+        self.x = randint(100, 1100)
+        self.y = randint(100, 900)
+        self.r = randint(10, 100)
+        self.color = COLORS[randint(0, 5)]
+        rect(screen, self.color,
+             (self.x, self.y, self.r, self.r))
 
-
-def new_ball(i):
-    """
-    рисует новый шарик вместо удаленного в точке со случайными
-    координатами и радиусом с одним из цветов из COLORS
-    :param i: номер удаленного шарика
-    :return:
-    """
-    x_ball[i] = randint(100, 1100)
-    y_ball[i] = randint(100, 900)
-    r_ball[i] = randint(10, 100)
-    color_ball[i] = COLORS[randint(0, 5)]
+    def rect_click(self, event, score):
+        """
+        Функция проверяет попадание по квадрату
+        :param event: событие(нажатие на кнопку мыши)
+        :param score: текущий счет
+        :return: возвращает счет после обработки события
+        """
+        if (event.pos[0] - self.x <= self.r) and \
+                (event.pos[0] - self.x) and \
+                (event.pos[1] - self.y <= self.r) and \
+                (event.pos[1] - self.y >= 0):
+            self.new_rect()
+            score += score_rect
+            print('Ваш счет', score)
+        return score
 
 
 def click(event, score):
@@ -115,49 +156,51 @@ def click(event, score):
     """
     # Проверка попадания в один из квадратов
     for i in range(k):
-        if (event.pos[0] - x_rect[i] <= r_rect[i]) and \
-                (event.pos[0] - x_rect[i] >= 0) and \
-                (event.pos[1] - y_rect[i] <= r_rect[i]) and \
-                (event.pos[1] - y_rect[i] >= 0):
-            new_rect(i)
-            score += score_rect
-            print('Ваш счет', score)
+        score = rectangle[i].rect_click(event, score)
     # Проверка попадания в один из шариков
     for i in range(n):
-        if ((event.pos[0] - x_ball[i]) ** 2 +
-                (event.pos[1] - y_ball[i]) ** 2 <= r_ball[i] ** 2):
-            new_ball(i)
-            score += score_ball
-            print('Ваш счет', score)
+        score = ball[i].ball_click(event, score)
     return score
+
+
+def end_game():
+    """
+    Функция записывает результат игры в таблицу рекордов и завершает
+    игру
+    :return: finished = True. Завершает игру
+    """
+    finish = True
+    output1 = open('record table.txt', 'w')
+    output2 = open('record table sys.txt', 'w')
+    i = 0
+    while i < 10:
+        if records[i] < score0:
+            for j in range(8, i, -1):
+                records[j + 1] = records[j]
+            records[i] = score0
+            i = 10
+        i += 1
+    for i in range(10):
+        print('Результат', i + 1, ': ', records[i], file=output1)
+        print(records[i], file=output2)
+    return finish
 
 
 pygame.display.update()
 clock = pygame.time.Clock()
 finished = False
+# Заносим таблицу рекордов
 read_records()
-
+# Cоздаем шарики
+ball = [Ball() for j in range(n)]
+# Создаем квадраты
+rectangle = [Rect() for k in range(k)]
 while not finished:
     clock.tick(FPS)
     f += 1
+    # Конец игры
     if f == 600:
-        finished = True
-        output1 = open('record table.txt', 'w')
-        output2 = open('record table sys.txt', 'w')
-        i = 0
-        while i < 10:
-            print(i)
-            if records[i] < score0:
-                print(i)
-                for j in range(8, i, -1):
-                    records[j + 1] = records[j]
-                print(i)
-                records[i] = score0
-                i = 10
-            i += 1
-        for i in range(10):
-            print('Результат', i + 1, ': ', records[i], file=output1)
-            print(records[i], file=output2)
+        finished = end_game()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
@@ -165,16 +208,13 @@ while not finished:
             score0 = click(event, score0)
     # отрисовка неудаленных квадратов
     for i in range(k):
-        old_rect(i)
+        rectangle[i].old_rect()
     if f % 15 == 0:
         for i in range(k):
-            new_rect(i)
+            rectangle[i].new_rect()
     # отрисовка неудаленных шариков
     for i in range(n):
-        x_ball[i], y_ball[i], \
-        v_ball_x[i], v_ball_y[i] = ball_move(x_ball[i], y_ball[i],
-                                             v_ball_x[i], v_ball_y[i],
-                                             r_ball[i], color_ball[i])
+        ball[i].ball_move()
     pygame.display.update()
     pygame.display.set_caption(str(score0))
     screen.fill(BLACK)
