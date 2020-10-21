@@ -26,8 +26,6 @@ BLACK = (0, 0, 0)
 COLORS = [RED, BLUE, YELLOW, GREEN, MAGENTA, CYAN]
 # Счет
 score0 = 0
-score_ball = 5  # Количество очков за попадание по шарику
-score_rect = 12  # Количество очков за попадание по квадрату
 
 
 def read_records():
@@ -51,6 +49,7 @@ class Ball(object):
         """
         Создание нового объекта из класса шариков
         """
+        self.score = 5
         self.x = randint(100, 1100)
         self.y = randint(100, 900)
         self.vx = randint(-10, 10)
@@ -94,7 +93,7 @@ class Ball(object):
         if ((event.pos[0] - self.x) ** 2 +
                 (event.pos[1] - self.y) ** 2 <= self.r ** 2):
             self.new_ball()
-            score += score_ball
+            score += self.score
             print('Ваш счет', score)
         return score
 
@@ -107,6 +106,7 @@ class Rect(object):
         """
         Создание нового объекта из класса квадратов
         """
+        self.score = 12
         self.x = randint(100, 1100)
         self.y = randint(100, 900)
         self.r = randint(10, 100)
@@ -148,7 +148,7 @@ class Rect(object):
                 (event.pos[1] - self.y <= self.r) and \
                 (event.pos[1] - self.y >= 0):
             self.new_rect()
-            score += score_rect
+            score += self.score
             print('Ваш счет', score)
         return score
 
