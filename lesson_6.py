@@ -9,8 +9,10 @@ pygame.init()
 n = 10  # максимальное количество шариков на экране
 k = 3  # максимальное количество квадратов на экране
 FPS = 30
+t = 20  # Время игры
 f = 0
 # Таблица рекордов
+names = ['0' for y in range(10)]
 records = [0 for i in range(10)]
 screen = pygame.display.set_mode((1200, 900))
 # Цвета
@@ -33,12 +35,16 @@ def read_records():
     Функция заносит в память программы таблицу рекордов
     :return:
     """
-    input = open('record table sys.txt', 'r')
-    r = input.readlines()
+    input1 = open('record table sys.txt', 'r')
+    input2 = open('record table sys 1.txt', 'r')
+    r = input1.readlines()
+    names_local = input2.readlines()
     for i in range(10):
+        names[i] = names_local[i].rstrip()
         r[i] = r[i].rstrip()
         records[i] = int(r[i])
-
+    input1.close()
+    input2.close()
 
 class Ball(object):
     def __init__(self):
@@ -172,17 +178,21 @@ def end_game():
     finish = True
     output1 = open('record table.txt', 'w')
     output2 = open('record table sys.txt', 'w')
+    output3 = open('record table sys 1.txt', 'w')
     i = 0
     while i < 10:
         if records[i] < score0:
             for j in range(8, i, -1):
+                names[j + 1] = names[j]
                 records[j + 1] = records[j]
+            names[i] = input()
             records[i] = score0
             i = 10
         i += 1
     for i in range(10):
-        print('Результат', i + 1, ': ', records[i], file=output1)
+        print(names[i], ': ', records[i], file=output1)
         print(records[i], file=output2)
+        print(names[i], file=output3)
     return finish
 
 
@@ -199,7 +209,7 @@ while not finished:
     clock.tick(FPS)
     f += 1
     # Конец игры
-    if f == 600:
+    if f == t * FPS:
         finished = end_game()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
